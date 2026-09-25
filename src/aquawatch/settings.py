@@ -42,6 +42,7 @@ class Settings:
     scenes_dir: Path
     cache_dir: Path
     baselines_path: Path
+    products_store: Path
     residuals_path: Path
     credits_path: Path
     uploads_dir: Path
@@ -58,6 +59,8 @@ class Settings:
     swir_scale: int
     min_valid_fraction: float
     pixel_area_m2: float
+    zone_rows: int
+    zone_cols: int
     sigma_threshold: float
     min_baseline_samples: int
     z_cap: float
@@ -122,6 +125,7 @@ def load_settings(root: Path | None = None) -> Settings:
         scenes_dir=_path(root, paths["scenes"]),
         cache_dir=_path(root, paths["cache"]),
         baselines_path=_path(root, paths["baselines"]),
+        products_store=_path(root, paths.get("products_store", "data/products/water_extent.sqlite")),
         residuals_path=_path(root, paths["residuals"]),
         credits_path=_path(root, paths["credits"]),
         uploads_dir=_path(root, paths["uploads"]),
@@ -138,6 +142,8 @@ def load_settings(root: Path | None = None) -> Settings:
         swir_scale=int(preprocess["swir_scale"]),
         min_valid_fraction=float(preprocess["min_valid_fraction"]),
         pixel_area_m2=float(preprocess["pixel_area_m2"]),
+        zone_rows=int(preprocess.get("zone_rows", 4)),
+        zone_cols=int(preprocess.get("zone_cols", 4)),
         sigma_threshold=float(anomaly["sigma_threshold"]),
         min_baseline_samples=int(anomaly["min_baseline_samples"]),
         z_cap=float(anomaly["z_cap"]),

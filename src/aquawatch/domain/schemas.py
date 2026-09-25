@@ -233,3 +233,108 @@ class HealthBody(BaseModel):
 class HealthResponse(Stamp):
     status: Literal["ok"]
     water_bodies: list[HealthBody]
+
+
+class BaselinePoint(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    date: str
+    value: float
+    baseline_mean: float | None
+    baseline_std: float | None
+    baseline_low: float | None
+    baseline_high: float | None
+    sample_count: int
+    season: str
+    used_fallback: bool
+
+
+class ZoneSeries(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    zone_id: str
+    points: list[BaselinePoint]
+
+
+class IndicatorSeries(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    indicator: Literal["extent", "turbidity", "chlorophyll", "transparency"]
+    unit: str
+    representation: str
+    zones: list[ZoneSeries]
+
+
+class WaterBodyTimeSeries(Stamp):
+    water_body_id: str
+    status: Literal["ok", "no_observations"]
+    reason: str | None = None
+    indicators: list[IndicatorSeries]
+
+
+class ZoneCompare(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    zone_id: str
+    date1: BaselinePoint | None
+    date2: BaselinePoint | None
+    diff: float | None
+
+
+class IndicatorCompare(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    indicator: Literal["extent", "turbidity", "chlorophyll", "transparency"]
+    unit: str
+    representation: str
+    raster_date1: str | None
+    raster_date2: str | None
+    diff_raster: str | None
+    diff_mean: float | None
+    zones: list[ZoneCompare]
+
+
+class WaterBodyCompare(Stamp):
+    water_body_id: str
+    date1: str
+    date2: str
+    status: Literal["ok", "date_missing"]
+    reason: str | None = None
+    indicators: list[IndicatorCompare]
+
+
+class SeriesEvidence(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    indicator: str
+    value: float
+    baseline_mean: float
+    baseline_std: float | None
+    baseline_low: float | None
+    baseline_high: float | None
+    sigma: float | None
+    threshold: float
+    crossed: bool
+    sample_count: int
+    unit: str
+
+
+class SeriesAlertModel(Stamp):
+    id: str
+    water_body_id: str
+    water_body_name: str
+    zone_id: str
+    lat: float | None
+    lon: float | None
+    polygon: dict | None
+    datetime: str
+    affected_region: str
+    indicators: list[str]
+    compound: bool
+    severity: Literal["low", "med", "high"]
+    template: str
+    evidence: list[SeriesEvidence]
+
+
+class SeriesAlertList(Stamp):
+    alerts: list[SeriesAlertModel]
