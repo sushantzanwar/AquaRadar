@@ -156,6 +156,25 @@ export function OverviewPage({ scenes }: { scenes: SceneIndex | null }) {
               ))}
             </select>
           </label>
+          {(bodies?.features ?? []).map((feature) => {
+            const id = feature.properties?.id;
+            const name = feature.properties?.name;
+            if (typeof id !== "string") return null;
+            return (
+              <button
+                key={id}
+                type="button"
+                className={id === selected ? "map-jump active" : "map-jump"}
+                onClick={() => {
+                  setSelected(id);
+                  setOutside(false);
+                  setCard(null);
+                }}
+              >
+                {typeof name === "string" ? name : id}
+              </button>
+            );
+          })}
           {(["trueColor", "turbidity", "chlorophyll", "anomaly"] as const).map((name) => (
             <label key={name} className="check">
               <input type="checkbox" checked={layers[name]} onChange={() => toggle(name)} />
@@ -173,8 +192,9 @@ export function OverviewPage({ scenes }: { scenes: SceneIndex | null }) {
             afterImage={afterImage}
             beforeLabel={compare || date}
             afterLabel={date}
-            layers={layers}
-            focus={focus}
+          layers={layers}
+          selectedId={selected}
+          focus={focus}
             onSelectBody={(id) => {
               setSelected(id);
               setOutside(false);
