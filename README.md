@@ -64,6 +64,13 @@ GET /waterbodies/{id}/compare?date1=YYYYMMDD&date2=YYYYMMDD
 
 The same paths are also mounted under `/api`. Timeseries returns dates, values, baseline mean, and the baseline band. Compare returns the two dates' values, their difference, and a `date2 - date1` GeoTIFF when both indicator rasters exist. Extent is square metres of valid water pixels in the zone. The indexes stay `unit=index`.
 
+Alerts are computed from that same series when a zone-date is more than `sigma_threshold` (default 3) from its baseline. Two or more indicators in one zone, such as an extent drop together with a chlorophyll-a spike, become one compound alert. Severity is `low`, `med`, or `high` from how far the largest sigma sits past the threshold. Confidence is the weakest of the clear-pixel fraction, mask agreement, and baseline length. Each alert carries a template sentence and the value-versus-baseline evidence. Nothing is prewritten:
+
+```bash
+GET /alerts
+GET /alerts/{id}
+```
+
 ```bash
 pytest
 ```
