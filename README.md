@@ -39,6 +39,14 @@ data/<water_body_id>/<YYYYMMDD>/
 
 A configured date with no folder still returns a dataset: reflectance is NaN, SCL is `0`, and `status` is `missing`. The API scene tree under `data/scenes/` is unchanged.
 
+Water masks are a separate one-time step, not part of an API request:
+
+```bash
+python scripts/preprocess_water.py
+```
+
+That command reads `data/<water_body_id>/<YYYYMMDD>/`, drops cloud and cloud-shadow pixels using SCL, and skips a date when less than 60% of the AOI is valid. Otherwise it runs `giswqs/s2-water-unetplusplus-efficientnet-b4` locally (weights loaded once from `models/s2-water-unetplusplus-efficientnet-b4`; nothing is downloaded). NDWI from B3 and B8 is the cross-check: disagreement over more than 25% of the valid area is stored as `low_confidence`. Each kept date gets `water_mask.tif` plus extent in hectares (water pixels × 100 m²) in `data/products/water_extent.sqlite` and `.parquet`.
+
 ```bash
 pytest
 ```

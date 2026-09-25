@@ -13,6 +13,8 @@ frontend/dist/
 # Cached satellite inputs and generated state. Directory placeholders stay.
 data/**/*.tif
 data/**/*.tiff
+data/products/*.sqlite
+data/products/*.parquet
 data/scenes/**
 !data/scenes/.gitkeep
 data/baselines/*.sqlite
