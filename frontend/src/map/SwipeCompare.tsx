@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import maplibregl from "maplibre-gl";
+import L from "leaflet";
 import type { FeatureCollection } from "../api/client";
-import { boundsOf, emptyStyle, zoneFill } from "./layers";
+import { boundsOf, fit, zoneStyle } from "./layers";
 
 type Props = {
   before: FeatureCollection | null;
@@ -13,43 +13,48 @@ type Props = {
 export function SwipeCompare({ before, after, beforeLabel, afterLabel }: Props) {
   const backRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLDivElement>(null);
-  const maps = useRef<{ back: maplibregl.Map; front: maplibregl.Map } | null>(null);
+  const maps = useRef<{ back: L.Map; front: L.Map } | null>(null);
+  const layers = useRef<Map<L.Map, L.GeoJSON>>(new Map());
   const [cut, setCut] = useState(55);
+  const beforeRef = useRef(before);
+  const afterRef = useRef(after);
+  beforeRef.current = before;
+  afterRef.current = after;
 
   useEffect(() => {
     if (!backRef.current || !frontRef.current || maps.current) return;
-    const back = new maplibregl.Map({ container: backRef.current, style: emptyStyle, center: [0.03, 0.025], zoom: 10 });
-    const front = new maplibregl.Map({ container: frontRef.current, style: emptyStyle, center: [0.03, 0.025], zoom: 10 });
-    const add = (map: maplibregl.Map) => {
-      map.on("load", () => {
-        map.addSource("zones", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
-        map.addLayer({ id: "zones-fill", type: "fill", source: "zones", paint: zoneFill });
-      });
-    };
-    add(back);
-    add(front);
+    const back = createMap(backRef.current);
+    const front = createMap(frontRef.current);
     let lock = false;
-    const sync = (source: maplibregl.Map, target: maplibregl.Map) => {
+    const sync = (source: L.Map, target: L.Map) => {
       source.on("move", () => {
         if (lock) return;
         lock = true;
-        target.jumpTo({ center: source.getCenter(), zoom: source.getZoom() });
+        target.setView(source.getCenter(), source.getZoom(), { animate: false });
         lock = false;
       });
     };
     sync(back, front);
     sync(front, back);
     maps.current = { back, front };
+    paint(back, beforeRef.current, layers.current);
+    paint(front, afterRef.current, layers.current);
+    requestAnimationFrame(() => {
+      back.invalidateSize();
+      front.invalidateSize();
+    });
     return () => {
       back.remove();
       front.remove();
       maps.current = null;
+      layers.current.clear();
     };
   }, []);
 
   useEffect(() => {
-    paint(maps.current?.back, before);
-    paint(maps.current?.front, after);
+    if (!maps.current) return;
+    paint(maps.current.back, before, layers.current);
+    paint(maps.current.front, after, layers.current);
   }, [before, after]);
 
   return (
@@ -68,10 +73,23 @@ export function SwipeCompare({ before, after, beforeLabel, afterLabel }: Props) 
   );
 }
 
-function paint(map: maplibregl.Map | undefined, zones: FeatureCollection | null) {
-  if (!map || !map.isStyleLoaded() || !zones) return;
-  const source = map.getSource("zones") as maplibregl.GeoJSONSource | undefined;
-  source?.setData(zones as GeoJSON.FeatureCollection);
+function createMap(node: HTMLDivElement): L.Map {
+  const map = L.map(node, { zoomControl: true }).setView([0.025, 0.03], 11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 18,
+  }).addTo(map);
+  return map;
+}
+
+function paint(map: L.Map, zones: FeatureCollection | null, layers: Map<L.Map, L.GeoJSON>) {
+  if (!zones) return;
+  const previous = layers.get(map);
+  if (previous) map.removeLayer(previous);
+  const layer = L.geoJSON(zones as GeoJSON.FeatureCollection, {
+    style: (feature) => zoneStyle(feature?.properties as Record<string, unknown> | undefined),
+  }).addTo(map);
+  layers.set(map, layer);
   const box = boundsOf(zones);
-  if (box) map.fitBounds(box, { padding: 28, animate: false });
+  if (box) fit(map, box);
 }
