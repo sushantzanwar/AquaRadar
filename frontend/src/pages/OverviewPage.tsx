@@ -15,6 +15,7 @@ import {
   type WaterBodySeries,
 } from "../api/client";
 import { AlertEvidenceCard } from "../components/AlertEvidenceCard";
+import { AssistantPanel } from "../components/AssistantPanel";
 import { HealthPanel } from "../components/HealthPanel";
 import { MonitorMap, type MapLayers } from "../map/MonitorMap";
 
@@ -221,6 +222,7 @@ export function OverviewPage({ scenes }: { scenes: SceneIndex | null }) {
           )}
         </article>
         <AlertEvidenceCard card={card} />
+        {body ? <AssistantPanel waterBodyId={body.id} date={date} /> : null}
         {body ? <p><Link to={`/water/${body.id}`}>Open the full water-body page</Link></p> : null}
       </aside>
     </div>

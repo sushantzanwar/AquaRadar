@@ -122,6 +122,8 @@ th, td { text-align: left; border-bottom: 1px solid #e6e1d6; padding: 0.25rem; }
 .priority { list-style: decimal; padding-left: 1.2rem; }
 .priority li { display: flex; flex-direction: column; }
 
+.assistant-answer { white-space: pre-wrap; }
+.assistant-prompts { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 .muted { color: #5c6770; }
 .error { color: #7f1d1d; }
 .formula { font-family: ui-monospace, monospace; font-size: 0.78rem; }
