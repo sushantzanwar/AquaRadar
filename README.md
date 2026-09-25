@@ -47,6 +47,14 @@ python scripts/preprocess_water.py
 
 That command reads `data/<water_body_id>/<YYYYMMDD>/`, drops cloud and cloud-shadow pixels using SCL, and skips a date when less than 60% of the AOI is valid. Otherwise it runs `giswqs/s2-water-unetplusplus-efficientnet-b4` locally (weights loaded once from `models/s2-water-unetplusplus-efficientnet-b4`; nothing is downloaded). NDWI from B3 and B8 is the cross-check: disagreement over more than 25% of the valid area is stored as `low_confidence`. Each kept date gets `water_mask.tif` plus extent in hectares (water pixels × 100 m²) in `data/products/water_extent.sqlite` and `.parquet`.
 
+Relative indexes are a second one-time step. They use `qda_modelos` (Miller–McKee 2004 on B4, Giardino et al. 2001 on B3 and B2, and Dall'Olmo / Gitelson when B5 and B6 are present) and only on the intersection of the water mask and clear SCL pixels:
+
+```bash
+python scripts/preprocess_indicators.py
+```
+
+Each date gets full-resolution GeoTIFFs under `data/products/indicators/` and per-zone mean and p90 for a grid over the water body. Those rows live in the same SQLite file (`indicator_zones`) and in `data/products/indicator_zones.parquet`. The unit on every raster and row is `index`. They are relative indexes, not laboratory concentrations.
+
 ```bash
 pytest
 ```
