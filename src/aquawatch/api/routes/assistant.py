@@ -13,4 +13,5 @@ def assistant(body: AssistantRequest, state: AppState = Depends(get_state)) -> A
     evidence = None
     if body.water_body_id and body.zone_id and body.date and state.settings.body(body.water_body_id):
         evidence = state.runner.evidence(body.water_body_id, body.zone_id, body.date)
-    return state.assistant.answer(body.question, evidence)
+    history = [{"role": msg.role, "content": msg.content} for msg in body.history]
+    return state.assistant.answer(body.question, evidence, history or None)

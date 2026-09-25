@@ -200,11 +200,25 @@ export const getZones = (id: string, date: string, compare?: string) => {
   if (compare) query.set("compare", compare);
   return request<MapZones>(`/api/maps/${id}/zones?${query.toString()}`);
 };
-export const askAssistant = (question: string, waterBodyId?: string, zoneId?: string, date?: string) =>
+export type ChatMessage = { role: "user" | "assistant"; content: string };
+
+export const askAssistant = (
+  question: string,
+  waterBodyId?: string,
+  zoneId?: string,
+  date?: string,
+  history?: ChatMessage[],
+) =>
   request<AssistantAnswer>("/api/assistant", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question, water_body_id: waterBodyId, zone_id: zoneId, date }),
+    body: JSON.stringify({
+      question,
+      water_body_id: waterBodyId,
+      zone_id: zoneId,
+      date,
+      history: history ?? [],
+    }),
   });
 export const getLeaderboard = () => request<Leaderboard>("/api/credits/leaderboard");
 
