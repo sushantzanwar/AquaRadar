@@ -71,6 +71,14 @@ GET /alerts
 GET /alerts/{id}
 ```
 
+Active anomaly zones are ranked for sampling with one product, not a model:
+
+```bash
+GET /waterbodies/{id}/priorities
+```
+
+`priority = severity × consecutive_anomalous_dates × proximity`. Severity is the largest absolute sigma divided by the configured cap. Persistence is how many stored dates in a row, ending on the latest date, are anomalous. Proximity falls off with distance from the zone centroid to the nearest intake and settlement in the water-body config. The response repeats that formula in one line, breaks out each term, and recommends the zone centroid as the GPS sample point. A zone whose latest date is back inside the baseline is left off the list.
+
 ```bash
 pytest
 ```

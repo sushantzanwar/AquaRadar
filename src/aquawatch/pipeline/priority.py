@@ -37,6 +37,27 @@ def priority_score(severity: float, persistence: float, proximity: float) -> flo
     return float(severity) * float(persistence) * float(proximity)
 
 
+def consecutive_anomalous_dates(dates: list[str], anomalous: set[str]) -> int:
+    """Trailing run of anomalous dates. ``dates`` is chronological."""
+    streak = 0
+    for date in reversed(dates):
+        if date not in anomalous:
+            break
+        streak += 1
+    return streak
+
+
+def investigation_formula(intake_weight: float, settlement_weight: float, scale_m: float, z_cap: float) -> str:
+    cap = z_cap if z_cap > 0 else 1.0
+    scale = scale_m if scale_m > 0 else 1.0
+    return (
+        "priority = severity × consecutive_anomalous_dates × proximity; "
+        f"severity = min(1, max|sigma| / {cap:g}); "
+        f"proximity = {intake_weight:g}/(1 + d_intake/{scale:g}) + "
+        f"{settlement_weight:g}/(1 + d_settlement/{scale:g})"
+    )
+
+
 def nearest_distance(origin: tuple[float, float], points: list[tuple[float, float]]) -> float | None:
     if not points:
         return None

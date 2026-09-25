@@ -330,3 +330,36 @@ class SeriesAlertModel(Stamp):
 
 class SeriesAlertList(Stamp):
     alerts: list[SeriesAlertModel]
+
+
+class SamplePoint(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    lat: float | None
+    lon: float | None
+
+
+class InvestigationSite(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    rank: int
+    zone_id: str
+    date: str
+    severity: float
+    severity_label: Literal["low", "med", "high"]
+    max_abs_sigma: float | None
+    persistence: int
+    proximity: float
+    distance_to_intake_m: float | None
+    distance_to_settlement_m: float | None
+    priority: float
+    sample_point: SamplePoint
+    indicators: list[str]
+    confidence: float
+    confidence_reasons: list[str]
+
+
+class InvestigationList(Stamp):
+    water_body_id: str
+    formula: str
+    zones: list[InvestigationSite]
