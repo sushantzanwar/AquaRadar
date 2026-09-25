@@ -69,7 +69,10 @@ Alerts are computed from that same series when a zone-date is more than `sigma_t
 ```bash
 GET /alerts
 GET /alerts/{id}
+GET /alerts/{id}/evidence
 ```
+
+The evidence card is deterministic: each contributing indicator's value, baseline mean and standard deviation, sigma, and whether it crossed the threshold, plus the clear-pixel fraction and mask agreement. `summary` is a one-line placeholder for later plain language. Alert and indicator payloads use this disclaimer: "Satellite-derived estimate for prioritisation only — requires laboratory verification".
 
 Active anomaly zones are ranked for sampling with one product, not a model:
 

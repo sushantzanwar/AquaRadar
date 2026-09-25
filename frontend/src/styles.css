@@ -20,6 +20,14 @@ a { color: #0f4c5c; }
   font-size: 0.92rem;
 }
 
+.disclaimer-inline {
+  margin-bottom: 0;
+  color: #7c4a03;
+  font-size: 0.85rem;
+}
+
+.summary { font-style: italic; }
+
 .top {
   display: flex;
   justify-content: space-between;

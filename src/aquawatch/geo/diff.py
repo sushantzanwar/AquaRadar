@@ -34,6 +34,6 @@ def write_raster_diff(before: Path, after: Path, destination: Path) -> float | N
             unit="index",
             representation="relative_index_difference",
             lab_grade="false",
-            disclaimer="Relative index difference only. Not a laboratory concentration.",
+            disclaimer="Satellite-derived estimate for prioritisation only — requires laboratory verification",
         )
     return float(np.mean(finite))

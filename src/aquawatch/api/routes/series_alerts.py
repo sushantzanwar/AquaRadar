@@ -7,11 +7,22 @@ from pathlib import Path
 from fastapi import APIRouter, Depends
 
 from aquawatch.api.deps import AppState, error_response, get_state
-from aquawatch.disclaimer import public_stamp
-from aquawatch.domain.schemas import InvestigationList, SamplePoint, SeriesAlertList, SeriesAlertModel
+from aquawatch.disclaimer import PRODUCT_DISCLAIMER, public_stamp
+from aquawatch.domain.schemas import (
+    AlertEvidenceCard,
+    InvestigationList,
+    SamplePoint,
+    SeriesAlertList,
+    SeriesAlertModel,
+)
 from aquawatch.geo.zones import zone_location
 from aquawatch.pipeline.investigation import context_points, rank_active_zones
-from aquawatch.pipeline.series_alerts import SeriesAlert, build_series_alerts, parse_alert_id
+from aquawatch.pipeline.series_alerts import (
+    SeriesAlert,
+    alert_evidence_view,
+    build_series_alerts,
+    parse_alert_id,
+)
 from aquawatch.pipeline.temporal import adaptive_series
 from aquawatch.storage.zone_series import load_scene_quality, load_zone_observations
 
@@ -81,7 +92,7 @@ def _model(alert: SeriesAlert) -> SeriesAlertModel:
         severity=alert.severity,  # type: ignore[arg-type]
         template=alert.template,
         evidence=[item.__dict__ for item in alert.evidence],
-        **public_stamp(alert.confidence, alert.confidence_reasons, alert.disclaimer),
+        **public_stamp(alert.confidence, alert.confidence_reasons, PRODUCT_DISCLAIMER),
     )
 
 
@@ -99,12 +110,25 @@ def list_alerts(state: AppState = Depends(get_state)):
                     reasons.append(reason)
     return SeriesAlertList(
         alerts=[_model(alert) for alert in alerts],
-        **public_stamp(confidence, reasons, state.settings.disclaimer),
+        **public_stamp(confidence, reasons, PRODUCT_DISCLAIMER),
     )
 
 
-@router.get("/alerts/{alert_id}", response_model=SeriesAlertModel)
-def get_alert(alert_id: str, state: AppState = Depends(get_state)):
+@router.get("/alerts/{alert_id}/evidence", response_model=AlertEvidenceCard)
+def alert_evidence(alert_id: str, state: AppState = Depends(get_state)):
+    match = _find_alert(alert_id, state)
+    if not isinstance(match, SeriesAlert):
+        return match
+    _water_body_id, _zone_id, date = parse_alert_id(alert_id) or ("", "", "")
+    quality = load_scene_quality(state.settings.products_store, match.water_body_id).get(date, {})
+    view = alert_evidence_view(match, quality.get("valid_fraction"), quality.get("disagreement_fraction"))
+    return AlertEvidenceCard(
+        **view,
+        **public_stamp(match.confidence, match.confidence_reasons, PRODUCT_DISCLAIMER),
+    )
+
+
+def _find_alert(alert_id: str, state: AppState) -> SeriesAlert | object:
     parsed = parse_alert_id(alert_id)
     if parsed is None:
         return error_response(state.settings, 404, "unusable", "unknown_alert")
@@ -114,6 +138,14 @@ def get_alert(alert_id: str, state: AppState = Depends(get_state)):
     match = next((alert for alert in alerts_for_settings(state, water_body_id) if alert.id == alert_id), None)
     if match is None:
         return error_response(state.settings, 404, "unusable", "unknown_alert")
+    return match
+
+
+@router.get("/alerts/{alert_id}", response_model=SeriesAlertModel)
+def get_alert(alert_id: str, state: AppState = Depends(get_state)):
+    match = _find_alert(alert_id, state)
+    if not isinstance(match, SeriesAlert):
+        return match
     return _model(match)
 
 
@@ -174,5 +206,5 @@ def priorities(water_body_id: str, state: AppState = Depends(get_state)):
             }
             for zone in ranked
         ],
-        **public_stamp(confidence, reasons, state.settings.disclaimer),
+        **public_stamp(confidence, reasons, PRODUCT_DISCLAIMER),
     )

@@ -5,7 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Query
 
 from aquawatch.api.deps import AppState, error_response, get_state
-from aquawatch.disclaimer import public_stamp
+from aquawatch.disclaimer import PRODUCT_DISCLAIMER, public_stamp
 from aquawatch.domain.schemas import (
     IndicatorCompare,
     IndicatorSeries,
@@ -88,7 +88,7 @@ def timeseries(water_body_id: str, zone_id: str | None = Query(None), state: App
         status=status,
         reason=reason,
         indicators=indicators,
-        **public_stamp(confidence, reasons, state.settings.disclaimer),
+        **public_stamp(confidence, reasons, PRODUCT_DISCLAIMER),
     )
 
 
@@ -160,7 +160,7 @@ def compare(
         status=status,
         reason=reason,
         indicators=indicators,
-        **public_stamp(confidence, reasons, state.settings.disclaimer),
+        **public_stamp(confidence, reasons, PRODUCT_DISCLAIMER),
     )
 
 

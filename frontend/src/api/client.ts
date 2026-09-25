@@ -189,7 +189,47 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const getScenes = () => request<SceneIndex>("/api/scenes");
 export const getAnomalies = (id: string, date: string) => request<AnomalyResponse>(`/api/anomalies/${id}/${date}`);
+export type EvidenceIndicator = {
+  indicator: string;
+  value: number;
+  baseline_mean: number;
+  baseline_std: number | null;
+  sigma: number | null;
+  threshold: number;
+  crossed: boolean;
+  unit: string;
+};
+
+export type AlertEvidenceCard = Stamp & {
+  alert_id: string;
+  water_body_id: string;
+  zone_id: string;
+  datetime: string;
+  valid_pixel_fraction: number | null;
+  mask_agreement: number | null;
+  thresholds_crossed: string[];
+  contributing_indicators: EvidenceIndicator[];
+  indicators: EvidenceIndicator[];
+  summary: string;
+};
+
+export type SeriesAlert = Stamp & {
+  id: string;
+  water_body_id: string;
+  zone_id: string;
+  datetime: string;
+  affected_region: string;
+  indicators: string[];
+  severity: "low" | "med" | "high";
+  template: string;
+};
+
+export type SeriesAlertList = Stamp & { alerts: SeriesAlert[] };
+
 export const getAlerts = (id: string, date: string) => request<AlertFeed>(`/api/alerts/${id}/${date}`);
+export const getSeriesAlerts = () => request<SeriesAlertList>("/api/alerts");
+export const getAlertEvidence = (alertId: string) =>
+  request<AlertEvidenceCard>(`/api/alerts/${encodeURIComponent(alertId)}/evidence`);
 export const getEvidence = (id: string, zone: string, date: string) =>
   request<EvidenceCard>(`/api/explain/${id}/${zone}/${date}`);
 export const getPriority = (id: string, date: string) => request<PriorityList>(`/api/priority/${id}/${date}`);
