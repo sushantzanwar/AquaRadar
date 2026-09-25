@@ -245,7 +245,7 @@ Raster binaries, model weights, FAISS indexes, and SQLite files stay out of git.
 - `src/aquawatch/api/deps.py` — Request-scoped settings, pipeline runner, and stores.
 - `src/aquawatch/api/routes/health.py` — Liveness plus a cache check: which water bodies and dates are actually on disk.
 - `src/aquawatch/api/routes/scenes.py` — Lists configured bodies and available dates, including insufficient-data dates and why.
-- `src/aquawatch/api/routes/maps.py` — Serves water extent, indicator rasters, and zone GeoJSON for MapLibre, including a before/after pair for the swipe control.
+- `src/aquawatch/api/routes/maps.py` — Serves water extent, indicator rasters, and zone GeoJSON for Leaflet, including a before/after pair for the swipe control.
 - `src/aquawatch/api/routes/anomalies.py` — Zone anomaly scores for a date, with per-indicator contributions.
 - `src/aquawatch/api/routes/alerts.py` — Alert feed generated from current anomalies.
 - `src/aquawatch/api/routes/explain.py` — “Why was this flagged?” evidence card: values, baseline, sigma, threshold, contributing indicators, confidence breakdown.
@@ -265,14 +265,14 @@ Raster binaries, model weights, FAISS indexes, and SQLite files stay out of git.
 
 ### Frontend
 
-- `frontend/package.json` — React, Vite, MapLibre GL, and a small chart library.
+- `frontend/package.json` — React, Vite, and Leaflet.
 - `frontend/vite.config.ts` — Dev server and proxy to the FastAPI origin.
 - `frontend/index.html` — Vite entry.
 - `frontend/tsconfig.json` — Strict TypeScript settings.
 - `frontend/src/main.tsx` — React mount.
 - `frontend/src/App.tsx` — Shell: water-body switcher, date control, and route outlets.
 - `frontend/src/api/client.ts` — Typed fetch wrappers. Responses with missing confidence or disclaimer are treated as errors in the UI.
-- `frontend/src/map/AnomalyMap.tsx` — MapLibre map of zones colored by fused score, click to open an evidence card.
+- `frontend/src/map/AnomalyMap.tsx` — Leaflet map of zones colored by fused score, click to open an evidence card.
 - `frontend/src/map/SwipeCompare.tsx` — Before/after swipe of two dates (extent or a chosen indicator).
 - `frontend/src/map/layers.ts` — Source and layer definitions for zones, sample points, intakes, and the stress-test plume outline.
 - `frontend/src/components/DisclaimerBanner.tsx` — Persistent lab-verification banner, same string as the API.

@@ -1,0 +1,38 @@
+# Offline scene catalog for the data loader. Paths are relative to the repo root.
+# The running API still reads data/scenes/; this file does not replace config/water_bodies.yaml.
+root: data
+boundary_crs: EPSG:4326
+water_bodies:
+  - id: demo-reservoir
+    name: Demo Reservoir
+    dates:
+      - "20240115"
+      - "20240312"
+      - "20240618"
+      - "20240821"
+      - "20241009"
+      - "20241202"
+    boundary:
+      type: Polygon
+      coordinates:
+        - - [0.0, 0.0]
+          - [0.06, 0.0]
+          - [0.06, 0.05]
+          - [0.0, 0.05]
+          - [0.0, 0.0]
+  - id: demo-lake
+    name: Demo Lake
+    dates:
+      - "20240202"
+      - "20240420"
+      - "20240707"
+      - "20240915"
+      - "20241128"
+    boundary:
+      type: Polygon
+      coordinates:
+        - - [1.0, 1.0]
+          - [1.05, 1.0]
+          - [1.05, 1.04]
+          - [1.0, 1.04]
+          - [1.0, 1.0]

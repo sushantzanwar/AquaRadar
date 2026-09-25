@@ -1,31 +1,14 @@
-import type { FillLayerSpecification, StyleSpecification } from "maplibre-gl";
+import type { PathOptions } from "leaflet";
 
-export const emptyStyle: StyleSpecification = {
-  version: 8,
-  sources: {},
-  layers: [{ id: "background", type: "background", paint: { "background-color": "#d5e2e8" } }],
-};
-
-export const zoneFill: FillLayerSpecification["paint"] = {
-  "fill-color": [
-    "case",
-    ["==", ["get", "flagged"], true],
-    ["match", ["get", "severity_label"], "severe", "#7f1d1d", "warning", "#c2410c", "#a16207"],
-    "#1d4e89",
-  ],
-  "fill-opacity": 0.78,
-};
-
-export const plumeOutline = {
-  type: "circle" as const,
-  paint: {
-    "circle-radius": 14,
-    "circle-color": "#7f1d1d",
-    "circle-opacity": 0.35,
-    "circle-stroke-width": 2,
-    "circle-stroke-color": "#7f1d1d",
-  },
-};
+export function zoneStyle(properties: Record<string, unknown> | null | undefined): PathOptions {
+  const flagged = properties?.flagged === true;
+  const severity = properties?.severity_label;
+  let fill = "#1d4e89";
+  if (flagged && severity === "severe") fill = "#7f1d1d";
+  else if (flagged && severity === "warning") fill = "#c2410c";
+  else if (flagged) fill = "#a16207";
+  return { color: "#102033", weight: 1.2, fillColor: fill, fillOpacity: 0.78 };
+}
 
 export function boundsOf(collection: {
   features: { geometry: { coordinates: unknown } }[];
@@ -48,4 +31,15 @@ export function boundsOf(collection: {
   collection.features.forEach((feature) => visit(feature.geometry));
   if (!Number.isFinite(west)) return null;
   return [west, south, east, north];
+}
+
+export function fit(map: import("leaflet").Map, box: [number, number, number, number]) {
+  const [west, south, east, north] = box;
+  map.fitBounds(
+    [
+      [south, west],
+      [north, east],
+    ],
+    { padding: [28, 28] },
+  );
 }
