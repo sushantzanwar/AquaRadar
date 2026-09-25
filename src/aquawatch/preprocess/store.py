@@ -18,11 +18,28 @@ COLUMNS = (
     "mask_path",
 )
 
+INDICATOR_COLUMNS = (
+    "water_body_id",
+    "date",
+    "zone_id",
+    "indicator",
+    "mean",
+    "p90",
+    "pixel_count",
+    "unit",
+    "representation",
+    "lab_grade",
+    "model",
+    "raster_path",
+    "disclaimer",
+)
+
 
 class ExtentStore:
     def __init__(self, sqlite_path: Path):
         self.sqlite_path = sqlite_path
         self.parquet_path = sqlite_path.with_suffix(".parquet")
+        self.indicator_parquet_path = sqlite_path.with_name("indicator_zones.parquet")
         self.sqlite_path.parent.mkdir(parents=True, exist_ok=True)
         self._ensure()
 
@@ -47,6 +64,26 @@ class ExtentStore:
                     extent_ha REAL,
                     mask_path TEXT,
                     PRIMARY KEY (water_body_id, date)
+                )
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS indicator_zones (
+                    water_body_id TEXT NOT NULL,
+                    date TEXT NOT NULL,
+                    zone_id TEXT NOT NULL,
+                    indicator TEXT NOT NULL,
+                    mean REAL,
+                    p90 REAL,
+                    pixel_count INTEGER NOT NULL,
+                    unit TEXT NOT NULL,
+                    representation TEXT NOT NULL,
+                    lab_grade INTEGER NOT NULL,
+                    model TEXT NOT NULL,
+                    raster_path TEXT,
+                    disclaimer TEXT NOT NULL,
+                    PRIMARY KEY (water_body_id, date, zone_id, indicator)
                 )
                 """
             )
@@ -79,6 +116,39 @@ class ExtentStore:
             ).fetchall()
         return [dict(row) for row in fetched]
 
+    def replace_indicators(self, water_body_id: str, date: str, rows: list[dict]) -> None:
+        payloads = []
+        for row in rows:
+            payload = {column: row.get(column) for column in INDICATOR_COLUMNS}
+            payload["water_body_id"] = water_body_id
+            payload["date"] = date
+            payload["lab_grade"] = int(bool(payload["lab_grade"]))
+            payloads.append(payload)
+        with self._connect() as connection:
+            connection.execute(
+                "DELETE FROM indicator_zones WHERE water_body_id = ? AND date = ?",
+                (water_body_id, date),
+            )
+            if payloads:
+                connection.executemany(
+                    f"""
+                    INSERT INTO indicator_zones ({", ".join(INDICATOR_COLUMNS)})
+                    VALUES ({", ".join(":" + column for column in INDICATOR_COLUMNS)})
+                    """,
+                    payloads,
+                )
+
+    def indicator_rows(self) -> list[dict]:
+        with self._connect() as connection:
+            fetched = connection.execute(
+                f"""
+                SELECT {", ".join(INDICATOR_COLUMNS)}
+                FROM indicator_zones
+                ORDER BY water_body_id, date, zone_id, indicator
+                """
+            ).fetchall()
+        return [dict(row) for row in fetched]
+
     def write_parquet(self) -> Path:
         import pyarrow as pa
         import pyarrow.parquet as pq
@@ -86,3 +156,15 @@ class ExtentStore:
         table = pa.Table.from_pylist(self.rows())
         pq.write_table(table, self.parquet_path)
         return self.parquet_path
+
+    def write_indicator_parquet(self) -> Path:
+        import pyarrow as pa
+        import pyarrow.parquet as pq
+
+        rows = self.indicator_rows()
+        if rows:
+            table = pa.Table.from_pylist(rows)
+        else:
+            table = pa.table({column: [] for column in INDICATOR_COLUMNS})
+        pq.write_table(table, self.indicator_parquet_path)
+        return self.indicator_parquet_path
