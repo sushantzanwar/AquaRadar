@@ -187,7 +187,40 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return payload;
 }
 
+export type MonitoredMap = FeatureCollection & Stamp;
+
+export type SeriesPoint = { date: string; value: number; baseline_mean: number | null };
+
+export type WaterBodySeries = Stamp & {
+  water_body_id: string;
+  status: string;
+  indicators: {
+    indicator: string;
+    unit: string;
+    zones: { zone_id: string; points: SeriesPoint[] }[];
+  }[];
+};
+
+export type TrueColorFrame = {
+  url: string;
+  bounds: [[number, number], [number, number]];
+};
+
 export const getScenes = () => request<SceneIndex>("/api/scenes");
+export const getMonitored = () => request<MonitoredMap>("/api/maps/monitored");
+export const getTimeSeries = (id: string) => request<WaterBodySeries>(`/api/waterbodies/${id}/timeseries`);
+
+export async function getTrueColor(id: string, date: string): Promise<TrueColorFrame | null> {
+  const response = await fetch(`/api/maps/${encodeURIComponent(id)}/true-color?date=${encodeURIComponent(date)}`);
+  if (!response.ok) return null;
+  const west = Number(response.headers.get("X-West"));
+  const south = Number(response.headers.get("X-South"));
+  const east = Number(response.headers.get("X-East"));
+  const north = Number(response.headers.get("X-North"));
+  if (![west, south, east, north].every(Number.isFinite)) return null;
+  const blob = await response.blob();
+  return { url: URL.createObjectURL(blob), bounds: [[south, west], [north, east]] };
+}
 export const getAnomalies = (id: string, date: string) => request<AnomalyResponse>(`/api/anomalies/${id}/${date}`);
 export type EvidenceIndicator = {
   indicator: string;
@@ -217,6 +250,8 @@ export type SeriesAlert = Stamp & {
   id: string;
   water_body_id: string;
   zone_id: string;
+  lat: number | null;
+  lon: number | null;
   datetime: string;
   affected_region: string;
   indicators: string[];
