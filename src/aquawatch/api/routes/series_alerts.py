@@ -8,8 +8,9 @@ from fastapi import APIRouter, Depends
 
 from aquawatch.api.deps import AppState, error_response, get_state
 from aquawatch.disclaimer import public_stamp
-from aquawatch.domain.schemas import SeriesAlertList, SeriesAlertModel
+from aquawatch.domain.schemas import InvestigationList, SamplePoint, SeriesAlertList, SeriesAlertModel
 from aquawatch.geo.zones import zone_location
+from aquawatch.pipeline.investigation import context_points, rank_active_zones
 from aquawatch.pipeline.series_alerts import SeriesAlert, build_series_alerts, parse_alert_id
 from aquawatch.pipeline.temporal import adaptive_series
 from aquawatch.storage.zone_series import load_scene_quality, load_zone_observations
@@ -114,3 +115,64 @@ def get_alert(alert_id: str, state: AppState = Depends(get_state)):
     if match is None:
         return error_response(state.settings, 404, "unusable", "unknown_alert")
     return _model(match)
+
+
+@router.get("/waterbodies/{water_body_id}/priorities", response_model=InvestigationList)
+def priorities(water_body_id: str, state: AppState = Depends(get_state)):
+    body = state.settings.body(water_body_id)
+    if body is None:
+        return error_response(state.settings, 404, "unusable", "unknown_water_body")
+    alerts = _alerts_for_body(state, body.id, body.name)
+    observations = load_zone_observations(
+        state.settings.products_store,
+        water_body_id,
+        state.settings.pixel_area_m2,
+    )
+    observed: dict[str, set[str]] = {}
+    for row in observations:
+        observed.setdefault(str(row["zone_id"]), set()).add(str(row["date"]))
+    ranked, formula = rank_active_zones(
+        alerts,
+        {zone_id: sorted(dates) for zone_id, dates in observed.items()},
+        intakes=context_points(getattr(body, "intakes", None), water_body_id),
+        settlements=context_points(getattr(body, "settlements", None), water_body_id),
+        intake_weight=body.intake_weight,
+        settlement_weight=body.settlement_weight,
+        scale_m=body.proximity_scale_m,
+        z_cap=state.settings.z_cap,
+        sigma_threshold=state.settings.sigma_threshold,
+    )
+    if not ranked:
+        confidence, reasons = 1.0, ["relative_index", "no_anomalies"]
+    else:
+        confidence = min(zone.confidence for zone in ranked)
+        reasons = []
+        for zone in ranked:
+            for reason in zone.confidence_reasons:
+                if reason not in reasons:
+                    reasons.append(reason)
+    return InvestigationList(
+        water_body_id=water_body_id,
+        formula=formula,
+        zones=[
+            {
+                "rank": zone.rank,
+                "zone_id": zone.zone_id,
+                "date": zone.date,
+                "severity": zone.severity,
+                "severity_label": zone.severity_label,
+                "max_abs_sigma": zone.max_abs_sigma,
+                "persistence": zone.persistence,
+                "proximity": zone.proximity,
+                "distance_to_intake_m": zone.distance_to_intake_m,
+                "distance_to_settlement_m": zone.distance_to_settlement_m,
+                "priority": zone.priority,
+                "sample_point": SamplePoint(lat=zone.sample_lat, lon=zone.sample_lon),
+                "indicators": zone.indicators,
+                "confidence": zone.confidence,
+                "confidence_reasons": zone.confidence_reasons,
+            }
+            for zone in ranked
+        ],
+        **public_stamp(confidence, reasons, state.settings.disclaimer),
+    )
