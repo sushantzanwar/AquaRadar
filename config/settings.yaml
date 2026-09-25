@@ -24,6 +24,8 @@ preprocess:
   swir_scale: 2
   min_valid_fraction: 0.4
   pixel_area_m2: 100
+  zone_rows: 4
+  zone_cols: 4
 
 anomaly:
   sigma_threshold: 3

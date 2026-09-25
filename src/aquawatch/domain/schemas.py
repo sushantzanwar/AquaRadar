@@ -293,3 +293,40 @@ class WaterBodyCompare(Stamp):
     status: Literal["ok", "date_missing"]
     reason: str | None = None
     indicators: list[IndicatorCompare]
+
+
+class SeriesEvidence(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    indicator: str
+    value: float
+    baseline_mean: float
+    baseline_std: float | None
+    baseline_low: float | None
+    baseline_high: float | None
+    sigma: float | None
+    threshold: float
+    crossed: bool
+    sample_count: int
+    unit: str
+
+
+class SeriesAlertModel(Stamp):
+    id: str
+    water_body_id: str
+    water_body_name: str
+    zone_id: str
+    lat: float | None
+    lon: float | None
+    polygon: dict | None
+    datetime: str
+    affected_region: str
+    indicators: list[str]
+    compound: bool
+    severity: Literal["low", "med", "high"]
+    template: str
+    evidence: list[SeriesEvidence]
+
+
+class SeriesAlertList(Stamp):
+    alerts: list[SeriesAlertModel]

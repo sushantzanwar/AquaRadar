@@ -74,3 +74,34 @@ def load_zone_observations(path: Path, water_body_id: str, pixel_area_m2: float)
             }
         )
     return observations
+
+
+def load_scene_quality(path: Path, water_body_id: str) -> dict[str, dict]:
+    """Clear-pixel fraction and mask disagreement for each stored date."""
+    if not path.is_file():
+        return {}
+    connection = sqlite3.connect(path)
+    connection.row_factory = sqlite3.Row
+    try:
+        tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+        if "water_detection" not in tables:
+            return {}
+        fetched = connection.execute(
+            """
+            SELECT date, valid_fraction, disagreement_fraction
+            FROM water_detection
+            WHERE water_body_id = ?
+            """,
+            (water_body_id,),
+        ).fetchall()
+    finally:
+        connection.close()
+    return {
+        str(row["date"]): {
+            "valid_fraction": None if row["valid_fraction"] is None else float(row["valid_fraction"]),
+            "disagreement_fraction": None
+            if row["disagreement_fraction"] is None
+            else float(row["disagreement_fraction"]),
+        }
+        for row in fetched
+    }

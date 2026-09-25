@@ -7,7 +7,20 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from aquawatch import __version__
 from aquawatch.api.deps import build_state
-from aquawatch.api.routes import alerts, anomalies, assistant, credits, explain, health, maps, priority, scenes, stress, waterbodies
+from aquawatch.api.routes import (
+    alerts,
+    anomalies,
+    assistant,
+    credits,
+    explain,
+    health,
+    maps,
+    priority,
+    scenes,
+    series_alerts,
+    stress,
+    waterbodies,
+)
 from aquawatch.settings import load_settings
 
 
@@ -25,6 +38,8 @@ def create_app() -> FastAPI:
         app.include_router(module.router, prefix="/api")
     app.include_router(waterbodies.router)
     app.include_router(waterbodies.router, prefix="/api")
+    app.include_router(series_alerts.router)
+    app.include_router(series_alerts.router, prefix="/api")
     return app
 
 
