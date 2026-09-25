@@ -1,5 +1,18 @@
 # Cached inputs
 
+## Analysis-ready cache
+
+`config/data_catalog.yaml` names each water body, its GeoJSON boundary, and its dates. Scenes for that catalog live here:
+
+```
+data/<water_body_id>/<YYYYMMDD>/
+  B2.tif  B3.tif  B4.tif  B8.tif  B11.tif  B12.tif  SCL.tif
+```
+
+`aquawatch.data.load_scene` reads only those files. B11 and B12 may be 20 m; they are resampled to the 10 m grid before the AOI clip. A missing date returns sentinel values (NaN reflectance, SCL `0`) instead of raising.
+
+## Pipeline cache
+
 Runtime reads this tree. It does not download satellite scenes.
 
 ```
