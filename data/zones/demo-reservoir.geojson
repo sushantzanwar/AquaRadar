@@ -1,0 +1,21 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"id": "north-basin", "name": "North basin"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[0.0, 0.028], [0.06, 0.028], [0.06, 0.05], [0.0, 0.05], [0.0, 0.028]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"id": "south-basin", "name": "South basin"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[0.0, 0.0], [0.06, 0.0], [0.06, 0.025], [0.0, 0.025], [0.0, 0.0]]]
+      }
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"id": "demo-lake", "name": "Demo Lake"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[1.0, 1.0], [1.05, 1.0], [1.05, 1.04], [1.0, 1.04], [1.0, 1.0]]]
+      }
+    }
+  ]
+}

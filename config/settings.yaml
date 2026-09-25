@@ -1,0 +1,52 @@
+paths:
+  scenes: data/scenes
+  cache: data/cache
+  baselines: data/baselines/baselines.sqlite
+  residuals: data/baselines/residuals.joblib
+  credits: data/credits/credits.sqlite
+  uploads: data/credits/uploads
+  corpus: data/corpus
+  models: models/s2-water-unetplusplus-efficientnet-b4
+
+model:
+  repo_id: giswqs/s2-water-unetplusplus-efficientnet-b4
+  tile_size: 512
+  overlap: 256
+  # Weights must already be on disk. The request path never downloads them.
+  allow_download: false
+  ndwi_threshold: 0.0
+  agreement_floor: 0.7
+  model_missing_confidence: 0.55
+  disagreement_confidence: 0.6
+
+preprocess:
+  swir_scale: 2
+  min_valid_fraction: 0.4
+  pixel_area_m2: 100
+
+anomaly:
+  sigma_threshold: 3
+  min_baseline_samples: 8
+  z_cap: 6
+  weights:
+    extent: 0.25
+    turbidity: 0.4
+    chlorophyll: 0.35
+
+credits:
+  award: 10
+  duplicate_distance_m: 25
+  duplicate_seconds: 3600
+  severity_bump: 0.15
+  severity_bump_cap: 0.45
+  demo_user: demo-user
+
+api:
+  cors_origins:
+    - http://localhost:5173
+    - http://127.0.0.1:5173
+
+disclaimer: >
+  AquaWatch reports relative satellite indicators for decision support.
+  They are not laboratory measurements. Ground sampling and lab verification
+  are required before any operational or public-health decision.
