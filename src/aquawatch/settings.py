@@ -42,6 +42,7 @@ class Settings:
     scenes_dir: Path
     cache_dir: Path
     baselines_path: Path
+    products_store: Path
     residuals_path: Path
     credits_path: Path
     uploads_dir: Path
@@ -122,6 +123,7 @@ def load_settings(root: Path | None = None) -> Settings:
         scenes_dir=_path(root, paths["scenes"]),
         cache_dir=_path(root, paths["cache"]),
         baselines_path=_path(root, paths["baselines"]),
+        products_store=_path(root, paths.get("products_store", "data/products/water_extent.sqlite")),
         residuals_path=_path(root, paths["residuals"]),
         credits_path=_path(root, paths["credits"]),
         uploads_dir=_path(root, paths["uploads"]),

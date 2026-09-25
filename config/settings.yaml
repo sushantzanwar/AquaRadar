@@ -2,6 +2,7 @@ paths:
   scenes: data/scenes
   cache: data/cache
   baselines: data/baselines/baselines.sqlite
+  products_store: data/products/water_extent.sqlite
   residuals: data/baselines/residuals.joblib
   credits: data/credits/credits.sqlite
   uploads: data/credits/uploads

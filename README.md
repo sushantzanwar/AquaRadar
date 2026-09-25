@@ -55,6 +55,15 @@ python scripts/preprocess_indicators.py
 
 Each date gets full-resolution GeoTIFFs under `data/products/indicators/` and per-zone mean and p90 for a grid over the water body. Those rows live in the same SQLite file (`indicator_zones`) and in `data/products/indicator_zones.parquet`. The unit on every raster and row is `index`. They are relative indexes, not laboratory concentrations.
 
+The same zone table feeds the temporal layer. For each zone and indicator (extent, turbidity, chlorophyll-a, transparency) the baseline is a leave-one-out seasonal mean and ±1 standard deviation. A season with fewer than two other dates falls back to the rest of the record, and a short history lowers confidence. Both views call that fit:
+
+```bash
+GET /waterbodies/{id}/timeseries
+GET /waterbodies/{id}/compare?date1=YYYYMMDD&date2=YYYYMMDD
+```
+
+The same paths are also mounted under `/api`. Timeseries returns dates, values, baseline mean, and the baseline band. Compare returns the two dates' values, their difference, and a `date2 - date1` GeoTIFF when both indicator rasters exist. Extent is square metres of valid water pixels in the zone. The indexes stay `unit=index`.
+
 ```bash
 pytest
 ```
