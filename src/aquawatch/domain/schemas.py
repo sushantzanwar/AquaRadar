@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -153,11 +153,19 @@ class AssistantAnswer(Stamp):
     grounded: bool
 
 
+class ChatMessage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    role: Annotated[str, Field(pattern="^(user|assistant)$")]
+    content: str
+
+
 class AssistantRequest(BaseModel):
     question: str
     water_body_id: str | None = None
     zone_id: str | None = None
     date: str | None = None
+    history: list[ChatMessage] = Field(default_factory=list)
 
 
 class CreditVerdict(Stamp):
