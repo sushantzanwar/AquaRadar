@@ -32,6 +32,7 @@ def create_app() -> FastAPI:
         allow_origins=settings.cors_origins,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["X-West", "X-South", "X-East", "X-North", "X-Date"],
     )
     app.state.aquawatch = build_state(settings)
     for module in (health, scenes, maps, anomalies, alerts, explain, priority, assistant, credits, stress):
