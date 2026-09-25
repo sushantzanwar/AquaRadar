@@ -55,8 +55,7 @@ def _post(url: str, payload: dict, api_key: str) -> dict:
 
 def build_provider(settings: Settings):
     name = (settings.llm_provider or "none").lower()
-    if name == "none":
-        return TemplateProvider()
-    if name not in {"local", "api"}:
+    # Gemini is not used. Unknown names, including gemini, stay on the local corpus and platform series.
+    if name in {"none", "gemini"} or name not in {"local", "api"}:
         return TemplateProvider()
     return HttpProvider(name, settings.llm_base_url, settings.llm_model, settings.llm_api_key)

@@ -19,6 +19,7 @@ type Props = {
   beforeLabel: string;
   afterLabel: string;
   layers: MapLayers;
+  selectedId: string | null;
   focus: { lat: number; lon: number; token: number } | null;
   onSelectBody: (id: string) => void;
   onOutside: () => void;
@@ -33,6 +34,7 @@ export function MonitorMap({
   beforeLabel,
   afterLabel,
   layers,
+  selectedId,
   focus,
   onSelectBody,
   onOutside,
@@ -81,18 +83,21 @@ export function MonitorMap({
   useEffect(() => {
     const pair = maps.current;
     if (!pair || !bodies) return;
-    const box = boundsOf(bodies);
-    if (!box) return;
-    const padded = pad(box, 0.4);
+    const union = boundsOf(bodies);
+    const box = viewBox(bodies, selectedId);
+    if (!union || !box) return;
+    const padded = pad(union, 0.4);
     const limits = L.latLngBounds(
       [padded[1], padded[0]],
       [padded[3], padded[2]],
     );
     pair.back.setMaxBounds(limits);
     pair.front.setMaxBounds(limits);
+    pair.back.invalidateSize();
+    pair.front.invalidateSize();
     fit(pair.back, box);
     fit(pair.front, box);
-  }, [bodies, ready]);
+  }, [bodies, ready, selectedId]);
 
   useEffect(() => {
     const pair = maps.current;
@@ -164,8 +169,12 @@ function drawBodies(map: L.Map, bodies: FeatureCollection | null, selectRef: { c
   if (previous) map.removeLayer(previous);
   if (!bodies) return;
   const layer = L.geoJSON(bodies as GeoJSON.FeatureCollection, {
-    style: { color: "#0f4c5c", weight: 2, fillColor: "#0f4c5c", fillOpacity: 0.12 },
+    style: { color: "#083844", weight: 3, fillColor: "#1a7a8c", fillOpacity: 0.55 },
     onEachFeature: (feature, shape) => {
+      const name = feature.properties?.name;
+      if (typeof name === "string") {
+        shape.bindTooltip(name, { permanent: true, direction: "center", className: "water-label" });
+      }
       shape.on("click", (event) => {
         L.DomEvent.stopPropagation(event);
         const id = feature.properties?.id;
@@ -219,6 +228,16 @@ function drawImage(map: L.Map, frame: TrueColorFrame | null) {
   if (!frame) return;
   const overlay = L.imageOverlay(frame.url, frame.bounds, { opacity: 0.92 }).addTo(map);
   imageLayers.set(map, overlay);
+}
+
+function viewBox(bodies: FeatureCollection, selectedId: string | null): [number, number, number, number] | null {
+  const selected = bodies.features.find((feature) => feature.properties?.id === selectedId);
+  if (selected) return boundsOf({ features: [selected] });
+  const union = boundsOf(bodies);
+  if (!union) return null;
+  const span = Math.max(union[2] - union[0], union[3] - union[1]);
+  if (span > 0.3 && bodies.features[0]) return boundsOf({ features: [bodies.features[0]] });
+  return union;
 }
 
 function pad(box: [number, number, number, number], fraction: number): [number, number, number, number] {
