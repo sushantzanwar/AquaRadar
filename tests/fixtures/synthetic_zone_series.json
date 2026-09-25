@@ -1,0 +1,34 @@
+{
+  "sigma_threshold": 3,
+  "min_baseline_samples": 8,
+  "z_cap": 6,
+  "weights": {"extent": 0.25, "turbidity": 0.4, "chlorophyll": 0.35},
+  "quiet": {
+    "samples": [
+      {"indicator": "turbidity", "value": 11.0, "mean": 10.0, "std": 1.0, "sample_count": 40},
+      {"indicator": "chlorophyll", "value": 5.2, "mean": 5.0, "std": 0.5, "sample_count": 40},
+      {"indicator": "extent", "value": 100500, "mean": 100000, "std": 1000, "sample_count": 40}
+    ]
+  },
+  "turbidity_spike": {
+    "samples": [
+      {"indicator": "turbidity", "value": 14.0, "mean": 10.0, "std": 1.0, "sample_count": 40},
+      {"indicator": "chlorophyll", "value": 5.1, "mean": 5.0, "std": 0.5, "sample_count": 40},
+      {"indicator": "extent", "value": 100200, "mean": 100000, "std": 1000, "sample_count": 40}
+    ]
+  },
+  "dual_spike": {
+    "samples": [
+      {"indicator": "turbidity", "value": 14.0, "mean": 10.0, "std": 1.0, "sample_count": 40},
+      {"indicator": "chlorophyll", "value": 7.0, "mean": 5.0, "std": 0.5, "sample_count": 40},
+      {"indicator": "extent", "value": 100200, "mean": 100000, "std": 1000, "sample_count": 40}
+    ]
+  },
+  "low_history_spike": {
+    "samples": [
+      {"indicator": "turbidity", "value": 14.0, "mean": 10.0, "std": 1.0, "sample_count": 2},
+      {"indicator": "chlorophyll", "value": 5.1, "mean": 5.0, "std": 0.5, "sample_count": 2},
+      {"indicator": "extent", "value": 100200, "mean": 100000, "std": 1000, "sample_count": 2}
+    ]
+  }
+}

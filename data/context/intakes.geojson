@@ -1,0 +1,15 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"id": "demo-intake", "name": "Demo intake", "water_body_id": "demo-reservoir"},
+      "geometry": {"type": "Point", "coordinates": [0.058, 0.047]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"id": "lake-intake", "name": "Lake intake", "water_body_id": "demo-lake"},
+      "geometry": {"type": "Point", "coordinates": [1.005, 1.038]}
+    }
+  ]
+}

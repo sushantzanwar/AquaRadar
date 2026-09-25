@@ -1,0 +1,21 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"id": "west-arm", "name": "West arm"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[1.0, 1.0], [1.02, 1.0], [1.02, 1.04], [1.0, 1.04], [1.0, 1.0]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"id": "east-arm", "name": "East arm"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[1.025, 1.0], [1.05, 1.0], [1.05, 1.04], [1.025, 1.04], [1.025, 1.0]]]
+      }
+    }
+  ]
+}

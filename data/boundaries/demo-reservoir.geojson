@@ -1,0 +1,13 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"id": "demo-reservoir", "name": "Demo Reservoir"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[0.0, 0.0], [0.06, 0.0], [0.06, 0.05], [0.0, 0.05], [0.0, 0.0]]]
+      }
+    }
+  ]
+}

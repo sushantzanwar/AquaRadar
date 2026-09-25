@@ -1,0 +1,36 @@
+# Scene dates listed here are the prepared archive. Extra YYYYMMDD folders on disk
+# are picked up automatically so a judge can drop in a new cached scene.
+water_bodies:
+  - id: demo-reservoir
+    name: Demo Reservoir
+    boundary: data/boundaries/demo-reservoir.geojson
+    zones: data/zones/demo-reservoir.geojson
+    settlements: data/context/settlements.geojson
+    intakes: data/context/intakes.geojson
+    dates:
+      - "20240115"
+      - "20240312"
+      - "20240618"
+      - "20240821"
+      - "20241009"
+      - "20241202"
+    priority_weights:
+      intake: 0.7
+      settlement: 0.3
+      proximity_scale_m: 5000
+  - id: demo-lake
+    name: Demo Lake
+    boundary: data/boundaries/demo-lake.geojson
+    zones: data/zones/demo-lake.geojson
+    settlements: data/context/settlements.geojson
+    intakes: data/context/intakes.geojson
+    dates:
+      - "20240202"
+      - "20240420"
+      - "20240707"
+      - "20240915"
+      - "20241128"
+    priority_weights:
+      intake: 0.7
+      settlement: 0.3
+      proximity_scale_m: 5000

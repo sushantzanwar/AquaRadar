@@ -1,0 +1,30 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.env
+.DS_Store
+
+node_modules/
+frontend/dist/
+
+# Cached satellite inputs and generated state. Directory placeholders stay.
+data/scenes/**
+!data/scenes/.gitkeep
+data/baselines/*.sqlite
+data/baselines/*.joblib
+data/credits/*.sqlite
+data/credits/uploads/
+data/cache/**
+!data/cache/.gitkeep
+!data/cache/masks/
+!data/cache/masks/.gitkeep
+!data/cache/indicators/
+!data/cache/indicators/.gitkeep
+
+# Model weights are downloaded once, ahead of the demo, and are not committed.
+models/**
+!models/README.md
+!models/.gitkeep
