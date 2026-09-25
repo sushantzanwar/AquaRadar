@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
+  getAlertEvidence,
   getAlerts,
   getAnomalies,
   getEvidence,
   getPriority,
+  getSeriesAlerts,
   getTrends,
   getZones,
+  type AlertEvidenceCard as SeriesCard,
   type AlertFeed,
   type AnomalyResponse,
   type EvidenceCard as Card,
+  type SeriesAlert,
   type PriorityList,
   type SceneIndex,
   type StressResponse,
@@ -17,6 +21,7 @@ import {
 } from "../api/client";
 import { AlertFeed as Feed } from "../components/AlertFeed";
 import { AssistantPanel } from "../components/AssistantPanel";
+import { AlertEvidenceCard } from "../components/AlertEvidenceCard";
 import { EvidenceCard } from "../components/EvidenceCard";
 import { PriorityList as Samples } from "../components/PriorityList";
 import { StressControls } from "../components/StressControls";
@@ -36,6 +41,8 @@ export function WaterBodyPage({ scenes }: { scenes: SceneIndex | null }) {
   const [priority, setPriority] = useState<PriorityList | null>(null);
   const [zoneId, setZoneId] = useState<string | undefined>();
   const [card, setCard] = useState<Card | null>(null);
+  const [seriesAlerts, setSeriesAlerts] = useState<SeriesAlert[]>([]);
+  const [seriesCard, setSeriesCard] = useState<SeriesCard | null>(null);
   const [trend, setTrend] = useState<TrendSeries | null>(null);
   const [indicator, setIndicator] = useState("turbidity");
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +68,14 @@ export function WaterBodyPage({ scenes }: { scenes: SceneIndex | null }) {
       })
       .catch((err: unknown) => setError(err instanceof Error ? err.message : "Load failed"));
   }, [id, date, compare]);
+
+  useEffect(() => {
+    if (!id) return;
+    getSeriesAlerts()
+      .then((list) => setSeriesAlerts(list.alerts.filter((alert) => alert.water_body_id === id)))
+      .catch(() => setSeriesAlerts([]));
+    setSeriesCard(null);
+  }, [id]);
 
   useEffect(() => {
     if (!id || !zoneId) return;
@@ -129,6 +144,21 @@ export function WaterBodyPage({ scenes }: { scenes: SceneIndex | null }) {
         <TrendChart series={trend} />
         <h3>Alerts</h3>
         <Feed alerts={alerts?.alerts ?? []} status={alerts?.status} />
+        <h3>Series evidence</h3>
+        {seriesAlerts.length ? (
+          <ul className="feed">
+            {seriesAlerts.map((alert) => (
+              <li key={alert.id}>
+                <button type="button" onClick={() => getAlertEvidence(alert.id).then(setSeriesCard).catch(() => setSeriesCard(null))}>
+                  {alert.severity} · {alert.zone_id} · {alert.datetime.slice(0, 10)}
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="muted">No series alerts for this water body.</p>
+        )}
+        <AlertEvidenceCard card={seriesCard} />
         <h3>Sample here first</h3>
         <Samples sites={priority?.sites ?? []} formula={priority?.sites[0]?.formula} />
         <AssistantPanel waterBodyId={id} zoneId={zoneId} date={date} />

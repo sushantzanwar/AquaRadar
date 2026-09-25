@@ -39,6 +39,7 @@ export function EvidenceCard({ card }: { card: Card | null }) {
       <p>Extent change: {card.extent_change_m2 === null ? "n/a" : `${card.extent_change_m2.toFixed(0)} m²`}</p>
       <p>Contributing: {card.contributing_indicators.join(", ") || "none"}</p>
       <p>Thresholds: {card.thresholds_crossed.join(", ") || "none crossed"}</p>
+      <p className="disclaimer-inline">{card.disclaimer}</p>
     </article>
   );
 }

@@ -10,14 +10,13 @@ from typing import Callable
 
 import numpy as np
 
+from aquawatch.disclaimer import PRODUCT_DISCLAIMER
 from aquawatch.geo.cloud_mask import valid_pixel_mask
 
 INDICATOR_UNIT = "index"
 INDICATOR_REPRESENTATION = "relative_index"
 INDICATOR_LAB_GRADE = False
-INDICATOR_DISCLAIMER = (
-    "Relative index only. Not a laboratory concentration, NTU, or Secchi depth."
-)
+INDICATOR_DISCLAIMER = PRODUCT_DISCLAIMER
 INDICATOR_MODELS = {
     "turbidity": "miller_mckee_2004",
     "chlorophyll": "dallolmo_gitelson_rundquist_2003",

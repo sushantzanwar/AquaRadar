@@ -332,6 +332,32 @@ class SeriesAlertList(Stamp):
     alerts: list[SeriesAlertModel]
 
 
+class EvidenceIndicator(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    indicator: str
+    value: float
+    baseline_mean: float
+    baseline_std: float | None
+    sigma: float | None
+    threshold: float
+    crossed: bool
+    unit: str
+
+
+class AlertEvidenceCard(Stamp):
+    alert_id: str
+    water_body_id: str
+    zone_id: str
+    datetime: str
+    valid_pixel_fraction: float | None
+    mask_agreement: float | None
+    thresholds_crossed: list[str]
+    contributing_indicators: list[EvidenceIndicator]
+    indicators: list[EvidenceIndicator]
+    summary: str
+
+
 class SamplePoint(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

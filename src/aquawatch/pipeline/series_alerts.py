@@ -11,6 +11,7 @@ from aquawatch.pipeline.anomaly import z_score
 from aquawatch.pipeline.temporal import AdaptivePoint
 from aquawatch.storage.zone_series import INDICATOR_ORDER, INDICATOR_UNITS
 
+SUMMARY_PLACEHOLDER = "Plain-language summary will appear here."
 _ALERT_ID = re.compile(r"^sa-(.+)-(r\d+c\d+)-(\d{8})$")
 _DISPLAY = {
     "extent": "extent",
@@ -54,6 +55,43 @@ class SeriesAlert:
     template: str
     evidence: list[AlertEvidence] = field(default_factory=list)
     disclaimer: str = ""
+
+
+def alert_evidence_view(
+    alert: SeriesAlert,
+    valid_pixel_fraction: float | None,
+    disagreement_fraction: float | None,
+) -> dict:
+    """Numbers behind one alert. The summary line is a placeholder, not a generated narrative."""
+    rows = [_indicator_numbers(item) for item in alert.evidence]
+    contributing = [row for row in rows if row["crossed"]]
+    agreement = None if disagreement_fraction is None else _clamp(1.0 - disagreement_fraction)
+    clear = None if valid_pixel_fraction is None else _clamp(valid_pixel_fraction)
+    return {
+        "alert_id": alert.id,
+        "water_body_id": alert.water_body_id,
+        "zone_id": alert.zone_id,
+        "datetime": alert.datetime,
+        "valid_pixel_fraction": clear,
+        "mask_agreement": agreement,
+        "thresholds_crossed": [f"{row['indicator']}>{row['threshold']:g}sigma" for row in contributing],
+        "contributing_indicators": contributing,
+        "indicators": rows,
+        "summary": SUMMARY_PLACEHOLDER,
+    }
+
+
+def _indicator_numbers(item: AlertEvidence) -> dict:
+    return {
+        "indicator": item.indicator,
+        "value": item.value,
+        "baseline_mean": item.baseline_mean,
+        "baseline_std": item.baseline_std,
+        "sigma": item.sigma,
+        "threshold": item.threshold,
+        "crossed": item.crossed,
+        "unit": item.unit,
+    }
 
 
 def alert_id(water_body_id: str, zone_id: str, date: str) -> str:

@@ -6,8 +6,7 @@ import { CreditsPage } from "./pages/CreditsPage";
 import { OverviewPage } from "./pages/OverviewPage";
 import { WaterBodyPage } from "./pages/WaterBodyPage";
 
-const FALLBACK =
-  "AquaWatch reports relative satellite indicators for decision support. They are not laboratory measurements. Ground sampling and lab verification are required before any operational or public-health decision.";
+const FALLBACK = "Satellite-derived estimate for prioritisation only — requires laboratory verification";
 
 export function App() {
   const [scenes, setScenes] = useState<SceneIndex | null>(null);

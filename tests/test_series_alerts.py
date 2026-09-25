@@ -13,6 +13,10 @@ from aquawatch.pipeline.series_alerts import build_series_alerts, severity_from_
 from aquawatch.pipeline.temporal import AdaptivePoint
 from aquawatch.preprocess.store import ExtentStore
 
+from aquawatch.disclaimer import PRODUCT_DISCLAIMER
+from aquawatch.indicators.compute import INDICATOR_DISCLAIMER
+from aquawatch.settings import load_settings
+
 DISCLAIMER = "Relative index only. Laboratory verification is required."
 
 
@@ -41,6 +45,13 @@ def _alerts(series, quality=None, threshold=3, min_samples=8):
         min_baseline_samples=min_samples,
         disclaimer=DISCLAIMER,
     )
+
+
+def test_product_disclaimer_is_the_required_sentence():
+    sentence = "Satellite-derived estimate for prioritisation only — requires laboratory verification"
+    assert PRODUCT_DISCLAIMER == sentence
+    assert INDICATOR_DISCLAIMER == sentence
+    assert load_settings().disclaimer == sentence
 
 
 def test_three_sigma_is_quiet_and_past_it_is_flagged():
@@ -153,6 +164,21 @@ def test_alerts_are_computed_from_the_store(tmp_path):
     fetched = client.get(f"/api/alerts/{alert['id']}")
     assert fetched.status_code == 200
     assert fetched.json()["template"] == alert["template"]
+    assert alert["disclaimer"] == (
+        "Satellite-derived estimate for prioritisation only — requires laboratory verification"
+    )
+    evidence = client.get(f"/alerts/{alert['id']}/evidence")
+    assert evidence.status_code == 200
+    card = evidence.json()
+    assert card["disclaimer"] == alert["disclaimer"]
+    assert card["summary"] == "Plain-language summary will appear here."
+    assert card["valid_pixel_fraction"] == pytest.approx(0.5)
+    assert card["mask_agreement"] == pytest.approx(0.9)
+    turbidity = next(row for row in card["contributing_indicators"] if row["indicator"] == "turbidity")
+    assert turbidity["crossed"] is True
+    assert turbidity["baseline_mean"] == pytest.approx(10)
+    assert turbidity["threshold"] == 3
+    assert "turbidity>3sigma" in card["thresholds_crossed"]
     assert client.get("/alerts/sa-pond-r0c0-20200115").status_code == 404
     assert client.get("/alerts/not-an-alert").status_code == 404
 

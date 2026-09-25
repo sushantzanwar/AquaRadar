@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-DEFAULT_DISCLAIMER = (
-    "AquaWatch reports relative satellite indicators for decision support. "
-    "They are not laboratory measurements. Ground sampling and lab verification "
-    "are required before any operational or public-health decision."
+PRODUCT_DISCLAIMER = (
+    "Satellite-derived estimate for prioritisation only — requires laboratory verification"
 )
+DEFAULT_DISCLAIMER = PRODUCT_DISCLAIMER
 
 
 def clamp_confidence(value: float) -> float:
